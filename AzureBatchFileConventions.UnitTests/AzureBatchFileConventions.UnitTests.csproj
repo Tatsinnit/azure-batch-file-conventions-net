@@ -57,7 +57,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="JobOutputKindUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskOutputKindUnitTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
