@@ -12,13 +12,25 @@ namespace Microsoft.Azure.Batch.Conventions.Files.Utilities
     {
         private static readonly Regex PermittedContainerNameChars = new Regex("^[-a-z0-9]{3,63}$");
         private static readonly HashAlgorithm hasher = new SHA1CryptoServiceProvider();
-        private static readonly int MaxJobIdLengthInMungedContainerName = 15;  // must be <= 63 - 1 - length of hash string (40 for SHA1)
+        private static readonly int MaxJobIdLengthInMungedContainerName = 15;  // must be <= 63 - "job-".Length - 1 (hyphen before hash) - length of hash string (40 for SHA1)
         private static readonly char[] ForbiddenLeadingTrailingContainerNameChars = new[] { '-' };
         private static readonly Regex UnderscoresAndMultipleDashes = new Regex("[_-]+");
+        private const string ContainerPrefix = "job-";
+        private static readonly int MaxUsableJobIdLength = 63 - ContainerPrefix.Length;
 
         internal static string GetSafeContainerName(string jobId)
         {
+            return "job-" + GetUnprefixedSafeContainerName(jobId);
+        }
+
+        private static string GetUnprefixedSafeContainerName(string jobId)
+        {
             jobId = jobId.ToLowerInvariant();  // it's safe to do this early as job ids cannot differ only by case, so the lower case job id is still a unique identifier
+
+            if (jobId.Length > MaxUsableJobIdLength)
+            {
+                return MungeToContainerName(jobId);
+            }
 
             if (!PermittedContainerNameChars.IsMatch(jobId))
             {

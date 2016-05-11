@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Batch.Conventions.Files.UnitTests.Utilities
         public void ValidContainerNamesAreNotMunged(BatchIdThatIsValidContainerName jobId)
         {
             var containerName = ContainerNameUtils.GetSafeContainerName(jobId.ToString());
-            Assert.Equal(jobId.ToString(), containerName);
+            Assert.Equal("job-" + jobId.ToString(), containerName);
         }
     }
 }

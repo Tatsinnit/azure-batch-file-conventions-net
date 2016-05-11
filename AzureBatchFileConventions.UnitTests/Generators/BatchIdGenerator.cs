@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Batch.Conventions.Files.UnitTests.Generators
         }
 
         private static readonly Gen<BatchIdThatIsValidContainerName> BatchIdThatIsValidContainerNameGen =
-            from len in Gen.Choose(1, 61)
+            from len in Gen.Choose(1, 57)  // need to allow for "job-" prefix and non-dash leading and trailing chars: 63 = 4 + 1 + 57 + 1
             from startChar in Gen.Elements(ContainerNameTerminalChars)
             from midChars in Gen.ArrayOf(len, Gen.Elements(ContainerNameChars))
             from endChar in Gen.Elements(ContainerNameTerminalChars)
