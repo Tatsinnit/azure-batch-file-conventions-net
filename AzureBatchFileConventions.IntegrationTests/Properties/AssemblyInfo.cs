@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AzureBatchFileConventions")]
+[assembly: AssemblyTitle("AzureBatchFileConventions.IntegrationTests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("AzureBatchFileConventions")]
+[assembly: AssemblyProduct("AzureBatchFileConventions.IntegrationTests")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a7f7b253-b796-4db1-8c51-022b3f31f900")]
+[assembly: Guid("ef4ec7cb-2e30-4881-aa7d-e4ce9218446d")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -34,6 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-[assembly: InternalsVisibleTo("Microsoft.Azure.Batch.Conventions.Files.UnitTests")]
-[assembly: InternalsVisibleTo("Microsoft.Azure.Batch.Conventions.Files.IntegrationTests")]
