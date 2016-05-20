@@ -22,22 +22,82 @@ namespace Microsoft.Azure.Batch.Conventions.Files
 
         public async Task SaveAsync(object kind, string relativePath, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (kind == null)
+            {
+                throw new ArgumentNullException(nameof(kind));
+            }
+            if (relativePath == null)
+            {
+                throw new ArgumentNullException(nameof(relativePath));
+            }
+            if (relativePath.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(relativePath)} must not be empty", nameof(relativePath));
+            }
+            if (Path.IsPathRooted(relativePath))
+            {
+                throw new ArgumentException($"{nameof(relativePath)} must not be a relative path", nameof(relativePath));
+            }
+
             var destinationPath = relativePath.Replace('\\', '/');
             await SaveAsync(kind, relativePath, destinationPath, cancellationToken);
         }
 
         public async Task SaveAsync(object kind, string sourcePath, string destinationRelativePath, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (kind == null)
+            {
+                throw new ArgumentNullException(nameof(kind));
+            }
+            if (sourcePath == null)
+            {
+                throw new ArgumentNullException(nameof(sourcePath));
+            }
+            if (sourcePath.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(sourcePath)} must not be empty", nameof(sourcePath));
+            }
+            if (destinationRelativePath == null)
+            {
+                throw new ArgumentNullException(nameof(destinationRelativePath));
+            }
+            if (destinationRelativePath.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(destinationRelativePath)} must not be empty", nameof(destinationRelativePath));
+            }
+
             var blobName = BlobName(kind, destinationRelativePath);
             var blob = _jobOutputContainer.GetBlockBlobReference(blobName);
             await blob.UploadFromFileAsync(sourcePath, FileMode.Open, cancellationToken);
         }
 
         public IEnumerable<IListBlobItem> List(object kind)
-            => _jobOutputContainer.ListBlobs(BlobNamePrefix(kind), useFlatBlobListing: true);
+        {
+            if (kind == null)
+            {
+                throw new ArgumentNullException(nameof(kind));
+            }
+
+            return _jobOutputContainer.ListBlobs(BlobNamePrefix(kind), useFlatBlobListing: true);
+        }
 
         public async Task<ICloudBlob> GetBlobAsync(object kind, string filePath, CancellationToken cancellationToken = default(CancellationToken))
-            => await _jobOutputContainer.GetBlobReferenceFromServerAsync(BlobName(kind, filePath), cancellationToken);
+        {
+            if (kind == null)
+            {
+                throw new ArgumentNullException(nameof(kind));
+            }
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+            if (filePath.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(filePath)} must not be empty", nameof(filePath));
+            }
+
+            return await _jobOutputContainer.GetBlobReferenceFromServerAsync(BlobName(kind, filePath), cancellationToken);
+        }
 
         internal abstract string BlobNamePrefix(object kind);
 
