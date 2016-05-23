@@ -122,6 +122,7 @@
     <Compile Include="TaskOutputStorageUnitTests.cs" />
     <Compile Include="Utilities\ContainerNameUtilsTests.cs" />
     <Compile Include="Utilities\FakeBatchServiceClient.cs" />
+    <Compile Include="Utilities\UrlUtilsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

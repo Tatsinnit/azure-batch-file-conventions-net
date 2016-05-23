@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage;
+﻿using Microsoft.Azure.Batch.Conventions.Files.Utilities;
+using Microsoft.WindowsAzure.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,25 +26,21 @@ namespace Microsoft.Azure.Batch.Conventions.Files
 
         private static string JobId(this CloudTask task)
         {
-            // Workaround for CloudTask not knowing its parent job ID - TODO: if we have to keep
-            // this then refactor the URL part extraction code, but want to review idea of adding
-            // JobId to CloudTask as a cleaner option.
+            // Workaround for CloudTask not knowing its parent job ID.
 
             if (task.Url == null)
             {
                 throw new ArgumentException("Task Url property must be populated", nameof(task));
             }
 
-            // URL is of the form "acct/jobs/jobId/tasks/taskId"
+            var jobId = UrlUtils.GetUrlValueSegment(task.Url, "jobs");
 
-            var url = task.Url;
-            var separatorIndex_tasks_taskId = url.LastIndexOf('/');
-            var separatorIndex_jobId_tasks = url.LastIndexOf('/', separatorIndex_tasks_taskId - 1);
-            var separatorIndex_job_jobId = url.LastIndexOf('/', separatorIndex_jobId_tasks - 1);
+            if (jobId == null)
+            {
+                throw new ArgumentException($"Task URL is malformed: unable to obtain job ID from URL '{task.Url}'", nameof(task));
+            }
 
-            var jobIdLength = separatorIndex_jobId_tasks - separatorIndex_job_jobId - 1;
-
-            return url.Substring(separatorIndex_job_jobId + 1, jobIdLength);
+            return jobId;
         }
     }
 }
