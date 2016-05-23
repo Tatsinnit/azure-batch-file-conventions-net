@@ -90,6 +90,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CloudJobExtensions.cs" />
+    <Compile Include="CloudTaskExtensions.cs" />
     <Compile Include="JobOutputKind.cs" />
     <Compile Include="JobOutputStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
