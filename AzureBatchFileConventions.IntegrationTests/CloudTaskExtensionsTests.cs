@@ -38,11 +38,11 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
             {
                 var task = await batchClient.JobOperations.GetTaskAsync(_jobId, _taskId);
 
-                await task.OutputStorage(StorageAccount).SaveAsync(TaskOutputKind.TaskOutput, "TestText1.txt");
+                await task.OutputStorage(StorageAccount).SaveAsync(TaskOutputKind.TaskOutput, FilePath("TestText1.txt"));
 
                 var blobs = task.OutputStorage(StorageAccount).ListOutputs(TaskOutputKind.TaskOutput).ToList();
                 Assert.NotEqual(0, blobs.Count);
-                Assert.Contains(blobs, b => b.Uri.AbsoluteUri.EndsWith($"{_jobId}/{_taskId}/$TaskOutput/TestText1.txt"));
+                Assert.Contains(blobs, b => b.Uri.AbsoluteUri.EndsWith($"{_jobId}/{_taskId}/$TaskOutput/Files/TestText1.txt"));
             }
         }
     }

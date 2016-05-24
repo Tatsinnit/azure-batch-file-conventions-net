@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         public async Task IfAFileIsSaved_ThenItAppearsInTheList()
         {
             var jobOutputStorage = new JobOutputStorage(StorageAccount, _jobId);
-            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, "TestText1.txt");
+            await jobOutputStorage.SaveAsyncImpl(JobOutputKind.JobOutput, FileBase, "TestText1.txt");
 
             var blobs = jobOutputStorage.ListOutputs(JobOutputKind.JobOutput).ToList();
             Assert.NotEqual(0, blobs.Count);
@@ -38,10 +38,27 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         }
 
         [Fact]
+        public async Task IfAFileIsSaved_UsingThePublicMethod_ThenTheCurrentDirectoryIsInferred()
+        {
+            // To avoid needing to mess with the process working directory, relative path tests
+            // normally go through the internal SaveAsyncImpl method.  This test verifies that
+            // the public SaveAsync method forwards the appropriate directory to SaveAsyncImpl.
+
+            Assert.True(File.Exists(FilePath("TestText1.txt")), "Current directory is not what was expected - cannot verify current directory inference");
+
+            var jobOutputStorage = new JobOutputStorage(StorageAccount, _jobId);
+            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, FilePath("TestText1.txt"));
+
+            var blobs = jobOutputStorage.ListOutputs(JobOutputKind.JobOutput).ToList();
+            Assert.NotEqual(0, blobs.Count);
+            Assert.Contains(blobs, b => b.Uri.AbsoluteUri.EndsWith($"{_jobId}/$JobOutput/Files/TestText1.txt"));
+        }
+
+        [Fact]
         public async Task IfAFileIsSavedWithAnExplicitPath_ThenItAppearsInTheList()
         {
             var jobOutputStorage = new JobOutputStorage(StorageAccount, _jobId);
-            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, "TestText1.txt", "RenamedTestText1.txt");
+            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, FilePath("TestText1.txt"), "RenamedTestText1.txt");
 
             var blobs = jobOutputStorage.ListOutputs(JobOutputKind.JobOutput).ToList();
             Assert.NotEqual(0, blobs.Count);
@@ -52,7 +69,7 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         public async Task IfAFileWithAMultiLevelPathIsSaved_ThenItAppearsInTheList()
         {
             var jobOutputStorage = new JobOutputStorage(StorageAccount, _jobId);
-            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, "File\\Under\\TestText2.txt");
+            await jobOutputStorage.SaveAsyncImpl(JobOutputKind.JobOutput, FileBase, "File\\Under\\TestText2.txt");
 
             var blobs = jobOutputStorage.ListOutputs(JobOutputKind.JobOutput).ToList();
             Assert.NotEqual(0, blobs.Count);
@@ -63,7 +80,7 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         public async Task IfAFileIsSavedWithAnExplicitMultiLevelPath_ThenItAppearsInTheList()
         {
             var jobOutputStorage = new JobOutputStorage(StorageAccount, _jobId);
-            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, "TestText1.txt", "File/In/The/Depths/TestText3.txt");
+            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, FilePath("TestText1.txt"), "File/In/The/Depths/TestText3.txt");
 
             var blobs = jobOutputStorage.ListOutputs(JobOutputKind.JobOutput).ToList();
             Assert.NotEqual(0, blobs.Count);
@@ -74,12 +91,12 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         public async Task IfAFileIsSaved_ThenItCanBeGot()
         {
             var jobOutputStorage = new JobOutputStorage(StorageAccount, _jobId);
-            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, "TestText1.txt", "Gettable.txt");
+            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, FilePath("TestText1.txt"), "Gettable.txt");
 
             var blob = await jobOutputStorage.GetOutputAsync(JobOutputKind.JobOutput, "Gettable.txt");
 
             var blobContent = await blob.ReadAsByteArrayAsync();
-            var originalContent = File.ReadAllBytes("TestText1.txt");
+            var originalContent = File.ReadAllBytes(FilePath("TestText1.txt"));
 
             Assert.Equal(originalContent, blobContent);
         }
@@ -88,12 +105,12 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         public async Task IfAFileIsSavedWithAMultiLevelPath_ThenItCanBeGot()
         {
             var jobOutputStorage = new JobOutputStorage(StorageAccount, _jobId);
-            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, "TestText1.txt", "This/File/Is/Gettable.txt");
+            await jobOutputStorage.SaveAsync(JobOutputKind.JobOutput, FilePath("TestText1.txt"), "This/File/Is/Gettable.txt");
 
             var blob = await jobOutputStorage.GetOutputAsync(JobOutputKind.JobOutput, "This/File/Is/Gettable.txt");
 
             var blobContent = await blob.ReadAsByteArrayAsync();
-            var originalContent = File.ReadAllBytes("TestText1.txt");
+            var originalContent = File.ReadAllBytes(FilePath("TestText1.txt"));
 
             Assert.Equal(originalContent, blobContent);
         }

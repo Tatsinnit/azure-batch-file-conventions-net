@@ -36,7 +36,10 @@ namespace Microsoft.Azure.Batch.Conventions.Files
         }
 
         public async Task SaveAsync(JobOutputKind kind, string relativePath, CancellationToken cancellationToken = default(CancellationToken))
-            => await _storagePath.SaveAsync(kind, relativePath, cancellationToken);
+            => await SaveAsyncImpl(kind, new DirectoryInfo(Environment.CurrentDirectory), relativePath, cancellationToken);
+
+        internal async Task SaveAsyncImpl(JobOutputKind kind, DirectoryInfo baseFolder, string relativePath, CancellationToken cancellationToken = default(CancellationToken))
+            => await _storagePath.SaveAsync(kind, baseFolder, relativePath, cancellationToken);
 
         public async Task SaveAsync(JobOutputKind kind, string sourcePath, string destinationRelativePath, CancellationToken cancellationToken = default(CancellationToken))
             => await _storagePath.SaveAsync(kind, sourcePath, destinationRelativePath, cancellationToken);

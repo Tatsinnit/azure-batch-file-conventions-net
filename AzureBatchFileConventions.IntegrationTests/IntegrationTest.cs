@@ -23,16 +23,8 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         {
             Output = output;
             StorageAccount = StorageConfiguration.GetAccount(output);
+            FileBase = new DirectoryInfo("Files");
             _jobIdFixture = jobIdFixture;
-
-            // For relative path tests to work, we want to be in the directory that contains
-            // our test upload files.  However, if we rerun the tests in an interactive runner
-            // then it may reuse the process, in which case we will already be in the Files
-            // directory.
-            if (!Environment.CurrentDirectory.EndsWith("\\Files"))
-            {
-                Environment.CurrentDirectory = Path.Combine(Environment.CurrentDirectory, "Files");
-            }
         }
 
         protected ITestOutputHelper Output { get; }
@@ -40,5 +32,11 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         protected CloudStorageAccount StorageAccount { get; }
 
         public void CancelTeardown() => _jobIdFixture.CancelTeardown();
+
+        protected DirectoryInfo FileBase { get; }
+
+        protected string FilePath(string relativePath) => Path.Combine(FileBase.Name, relativePath);
+
+        protected DirectoryInfo FileSubfolder(string relativeFolderPath) => new DirectoryInfo(Path.Combine(FileBase.Name, relativeFolderPath));
     }
 }

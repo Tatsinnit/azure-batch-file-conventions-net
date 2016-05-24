@@ -20,8 +20,10 @@ namespace Microsoft.Azure.Batch.Conventions.Files
             _jobOutputContainer = jobOutputContainer;
         }
 
-        public async Task SaveAsync(object kind, string relativePath, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SaveAsync(object kind, DirectoryInfo baseFolder, string relativePath, CancellationToken cancellationToken = default(CancellationToken))
         {
+            Debug.Assert(baseFolder != null);
+
             if (kind == null)
             {
                 throw new ArgumentNullException(nameof(kind));
@@ -39,8 +41,10 @@ namespace Microsoft.Azure.Batch.Conventions.Files
                 throw new ArgumentException($"{nameof(relativePath)} must not be a relative path", nameof(relativePath));
             }
 
-            var destinationPath = relativePath.Replace('\\', '/');
-            await SaveAsync(kind, relativePath, destinationPath, cancellationToken);
+            string sourcePath = Path.Combine(baseFolder.FullName, relativePath);
+            string destinationPath = GetDestinationBlobPath(relativePath);
+
+            await SaveAsync(kind, sourcePath, destinationPath, cancellationToken);
         }
 
         public async Task SaveAsync(object kind, string sourcePath, string destinationRelativePath, CancellationToken cancellationToken = default(CancellationToken))
@@ -103,6 +107,30 @@ namespace Microsoft.Azure.Batch.Conventions.Files
 
         internal string BlobName(object kind, string relativePath)
             => $"{BlobNamePrefix(kind)}{relativePath}";
+
+        private static string GetDestinationBlobPath(string relativeSourcePath)
+        {
+            const string up = "../";
+
+            var destinationPath = relativeSourcePath.Replace('\\', '/');
+
+            // If we are given a path that traverses up from the working directory,
+            // treat it as though it were rooted at the working directory for blob naming
+            // purposes. This is intended to support files such as ..\stdout.txt, which
+            // is stored above the task working directory.
+            //
+            // A user can intentionally try to defeat this simple flattening by using a path
+            // such as "temp\..\..\stdout.txt" - this may result in the file being
+            // stored in the 'wrong' part of the job container, but they can't write
+            // outside the job container this way, so the only damage they can do is
+            // to themselves.
+            while (destinationPath.StartsWith(up))
+            {
+                destinationPath = relativeSourcePath.Substring(up.Length);
+            }
+
+            return destinationPath;
+        }
 
         internal sealed class JobStoragePath : StoragePath
         {
