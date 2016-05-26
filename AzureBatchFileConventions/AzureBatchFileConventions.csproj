@@ -98,6 +98,8 @@
     <Compile Include="StoragePath.cs" />
     <Compile Include="TaskOutputKind.cs" />
     <Compile Include="TaskOutputStorage.cs" />
+    <Compile Include="TrackedFile.cs" />
+    <Compile Include="Utilities\BlobUtils.cs" />
     <Compile Include="Utilities\CloudBlobContainerUtils.cs" />
     <Compile Include="Utilities\ContainerNameUtils.cs" />
     <Compile Include="Utilities\UrlUtils.cs" />

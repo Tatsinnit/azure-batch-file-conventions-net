@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAzure.Storage.Blob;
+﻿using Microsoft.Azure.Batch.Conventions.Files.Utilities;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -73,6 +74,58 @@ namespace Microsoft.Azure.Batch.Conventions.Files
             var blobName = BlobName(kind, destinationRelativePath);
             var blob = _jobOutputContainer.GetBlockBlobReference(blobName);
             await blob.UploadFromFileAsync(sourcePath, FileMode.Open, cancellationToken);
+        }
+
+        public async Task<TrackedFile> SaveTrackedAsync(object kind, string relativePath, TimeSpan flushInterval)
+        {
+            if (kind == null)
+            {
+                throw new ArgumentNullException(nameof(kind));
+            }
+            if (relativePath == null)
+            {
+                throw new ArgumentNullException(nameof(relativePath));
+            }
+            if (relativePath.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(relativePath)} must not be empty", nameof(relativePath));
+            }
+            if (Path.IsPathRooted(relativePath))
+            {
+                throw new ArgumentException($"{nameof(relativePath)} must not be a relative path", nameof(relativePath));
+            }
+
+            var destinationPath = GetDestinationBlobPath(relativePath);
+            return await SaveTrackedAsync(kind, relativePath, destinationPath, flushInterval);
+        }
+
+        public async Task<TrackedFile> SaveTrackedAsync(object kind, string sourcePath, string destinationRelativePath, TimeSpan flushInterval)
+        {
+            if (kind == null)
+            {
+                throw new ArgumentNullException(nameof(kind));
+            }
+            if (sourcePath == null)
+            {
+                throw new ArgumentNullException(nameof(sourcePath));
+            }
+            if (sourcePath.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(sourcePath)} must not be empty", nameof(sourcePath));
+            }
+            if (destinationRelativePath == null)
+            {
+                throw new ArgumentNullException(nameof(destinationRelativePath));
+            }
+            if (destinationRelativePath.Length == 0)
+            {
+                throw new ArgumentException($"{nameof(destinationRelativePath)} must not be empty", nameof(destinationRelativePath));
+            }
+
+            var blobName = BlobName(kind, destinationRelativePath);
+            var blob = _jobOutputContainer.GetAppendBlobReference(blobName);
+            await blob.EnsureExistsAsync();
+            return new TrackedFile(sourcePath, blob, flushInterval);
         }
 
         public IEnumerable<IListBlobItem> List(object kind)

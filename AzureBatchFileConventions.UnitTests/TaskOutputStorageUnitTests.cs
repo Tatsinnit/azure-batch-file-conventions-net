@@ -75,6 +75,62 @@ namespace Microsoft.Azure.Batch.Conventions.Files.UnitTests
         }
 
         [Fact]
+        public async Task CannotPassANullFilePathWhenSavingTracked()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => _storage.SaveTrackedAsync(null));
+            Assert.Equal("relativePath", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task CannotPassAnEmptyFilePathWhenSavingTracked()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _storage.SaveTrackedAsync(""));
+            Assert.Equal("relativePath", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task CannotPassAnAbsoluteFilePathWhenSavingTracked()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _storage.SaveTrackedAsync(@"c:\test.txt"));
+            Assert.Equal("relativePath", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task CannotPassANullKindWhenSavingTrackedToDestination()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => _storage.SaveTrackedAsync(null, "test.txt", "testing.txt", TimeSpan.FromSeconds(1)));
+            Assert.Equal("kind", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task CannotPassANullFilePathWhenSavingTrackedToDestination()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => _storage.SaveTrackedAsync(TaskOutputKind.TaskLog, null, "testing.txt", TimeSpan.FromSeconds(1)));
+            Assert.Equal("sourcePath", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task CannotPassAnEmptyFilePathWhenSavingTrackedToDestination()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _storage.SaveTrackedAsync(TaskOutputKind.TaskLog, "", "testing.txt", TimeSpan.FromSeconds(1)));
+            Assert.Equal("sourcePath", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task CannotPassANullDestinationWhenSavingTrackedToDestination()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => _storage.SaveTrackedAsync(TaskOutputKind.TaskLog, "test.txt", null, TimeSpan.FromSeconds(1)));
+            Assert.Equal("destinationRelativePath", ex.ParamName);
+        }
+
+        [Fact]
+        public async Task CannotPassAnEmptyDestinationWhenSavingTrackedToDestination()
+        {
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => _storage.SaveTrackedAsync(TaskOutputKind.TaskLog, "test.txt", "", TimeSpan.FromSeconds(1)));
+            Assert.Equal("destinationRelativePath", ex.ParamName);
+        }
+
+        [Fact]
         public void CannotPassANullKindWhenListing()
         {
             var ex = Assert.Throws<ArgumentNullException>(() => _storage.ListOutputs(null));

@@ -57,5 +57,11 @@ namespace Microsoft.Azure.Batch.Conventions.Files
 
         public async Task<ICloudBlob> GetOutputAsync(TaskOutputKind kind, string filePath, CancellationToken cancellationToken = default(CancellationToken))
             => await _storagePath.GetBlobAsync(kind, filePath, cancellationToken);
+
+        public async Task<IDisposable> SaveTrackedAsync(string relativePath)
+            => await _storagePath.SaveTrackedAsync(TaskOutputKind.TaskLog, relativePath, TrackedFile.DefaultFlushInterval);
+
+        public async Task<IDisposable> SaveTrackedAsync(TaskOutputKind kind, string sourcePath, string destinationRelativePath, TimeSpan flushInterval)
+            => await _storagePath.SaveTrackedAsync(kind, sourcePath, destinationRelativePath, flushInterval);
     }
 }

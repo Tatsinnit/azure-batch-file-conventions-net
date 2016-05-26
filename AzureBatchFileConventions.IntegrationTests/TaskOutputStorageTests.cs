@@ -142,5 +142,78 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
 
             Assert.Equal(404, ex.RequestInformation.HttpStatusCode);
         }
+
+        [Fact]
+        public async Task IfAFileIsSavedTracked_ThenChangesArePersisted()
+        {
+            var file = Path.GetTempFileName();
+
+            try
+            {
+                var taskOutputStorage = new TaskOutputStorage(StorageAccount, _jobId, _taskId);
+                using (await taskOutputStorage.SaveTrackedAsync(TaskOutputKind.TaskLog, file, "Tracked1.txt", TimeSpan.FromMilliseconds(10)))
+                {
+                    await Task.Delay(30);
+                    File.AppendAllLines(file, new[] { "Line 1" });
+                    await Task.Delay(20);
+                    File.AppendAllLines(file, new[] { "Line 2" });
+                    await Task.Delay(20);
+                    File.AppendAllLines(file, new[] { "Line 3" });
+                }
+
+                var blob = await taskOutputStorage.GetOutputAsync(TaskOutputKind.TaskLog, "Tracked1.txt");
+
+                var blobContent = await blob.ReadAsByteArrayAsync();
+                var originalContent = File.ReadAllBytes(file);
+
+                Assert.Equal(originalContent, blobContent);
+            }
+            finally
+            {
+                File.Delete(file);
+            }
+        }
+
+        [Fact]
+        public async Task IfATrackedFileIsIsUseWhenItIsDueToBeFlushed_ThenNoErrorOccursAndChangesArePersisted()
+        {
+            var file = Path.GetTempFileName();
+
+            try
+            {
+                var taskOutputStorage = new TaskOutputStorage(StorageAccount, _jobId, _taskId);
+                using (await taskOutputStorage.SaveTrackedAsync(TaskOutputKind.TaskLog, file, "Tracked2.txt", TimeSpan.FromMilliseconds(5)))
+                {
+                    using (var writer = File.AppendText(file))
+                    {
+                        for (int i = 0; i < 100; ++i)
+                        {
+                            await Task.Delay(3);
+                            await writer.WriteLineAsync($"Line {i}");
+                            await Task.Delay(3);
+                        }
+                    }
+                    using (var writer = File.AppendText(file))
+                    {
+                        for (int i = 0; i < 100; ++i)
+                        {
+                            await writer.WriteLineAsync($"Line {i + 100}");
+                            await Task.Delay(2);
+                        }
+                    }
+                }
+
+                var blob = await taskOutputStorage.GetOutputAsync(TaskOutputKind.TaskLog, "Tracked2.txt");
+
+                var blobContent = await blob.ReadAsByteArrayAsync();
+                var originalContent = File.ReadAllBytes(file);
+
+                Assert.Equal(originalContent, blobContent);
+            }
+            finally
+            {
+                File.Delete(file);
+            }
+        }
     }
 }
