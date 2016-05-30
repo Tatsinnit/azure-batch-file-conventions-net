@@ -30,7 +30,10 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
 
         public async Task InitializeAsync()
         {
-            await CreateJobOutputContainerIfNotExistsAsync();
+            if (AutoCreateContainer)
+            {
+                await CreateJobOutputContainerIfNotExistsAsync();
+            }
         }
 
         public async Task DisposeAsync()
@@ -90,5 +93,7 @@ namespace Microsoft.Azure.Batch.Conventions.Files.IntegrationTests
         }
 
         protected abstract string TestId { get; }
+
+        protected virtual bool AutoCreateContainer { get; } = true;
     }
 }
