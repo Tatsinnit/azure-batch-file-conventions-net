@@ -8,8 +8,17 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Batch.Conventions.Files
 {
+    /// <summary>
+    /// Provides methods for working with the outputs of a <see cref="CloudTask"/>.
+    /// </summary>
     public static class CloudTaskExtensions
     {
+        /// <summary>
+        /// Gets the <see cref="TaskOutputStorage"/> for a specified <see cref="CloudTask"/>.
+        /// </summary>
+        /// <param name="task">The task for which to get output storage.</param>
+        /// <param name="storageAccount">The storage account linked to the Azure Batch account.</param>
+        /// <returns>A TaskOutputStorage for the specified task.</returns>
         public static TaskOutputStorage OutputStorage(this CloudTask task, CloudStorageAccount storageAccount)
         {
             if (task == null)
